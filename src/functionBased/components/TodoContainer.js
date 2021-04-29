@@ -74,6 +74,10 @@ const TodoContainer = () =>  {
         const temp = JSON.stringify(todos)
         localStorage.setItem("todos", temp)
     }, [todos])
+
+    useEffect(() => {
+        document.title = "todos"
+      }, [])
     
     return (
         <>
