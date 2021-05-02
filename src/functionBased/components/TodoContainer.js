@@ -1,10 +1,12 @@
 //Libs
 import React, {useState, useEffect} from "react"
-import InputTodo from "./InputTodo"
-import { v4 as uuidv4 } from "uuid"
+import {  v4 as uuidv4 } from "uuid"
 import { Route, Switch } from "react-router-dom"
+import { DragDropContext } from "react-beautiful-dnd";
+
 
 //Components
+import InputTodo from "./InputTodo"
 import TodosList from "./TodosList"
 import Header from "./Header"
 import Navbar from "./Navbar"
@@ -12,6 +14,8 @@ import Navbar from "./Navbar"
 //Pages
 import About from "../pages/About"
 import NotMatch from "../pages/NotMatch"
+
+
 
 
 const TodoContainer = () =>  {
@@ -44,8 +48,10 @@ const TodoContainer = () =>  {
         const newTodo ={
             id: uuidv4(),
             title: title,
-            completed: false
+            completed: false,
+            order: newOrder(),
         }
+
         setTodos([...todos, newTodo])
     }
 
@@ -58,14 +64,69 @@ const TodoContainer = () =>  {
                 return todo
             })
         )
+    }    
+
+    const onDragEnd = result => {
+        const {destination, source, draggableId}=result;
+
+        if (!destination){
+            return;
+        }
+
+        if(
+            destination.droppableId === source.droppableId &&
+            destination.index === source.index 
+        ){
+            return;
+        }
+
+        const newTaskIds = getOrder();
+
+        newTaskIds.splice(source.index,1);
+        newTaskIds.splice(destination.index, 0, draggableId)
+
+        var newTodos = []
+
+        newTodos = todos.map(todo =>{
+            for(var i=0; i < newTaskIds.length;i++){
+                if (todo.order===newTaskIds[i]){
+                    todo.order= i.toString()
+                    return todo
+                }
+            }  
+        })
+
+        newTodos = newTodos.sort(function(a, b){
+            return a.order - b.order;
+        })
+
+        setTodos(newTodos);
     }
+
+    const getOrder = () => {
+        const orderTab = []
+        todos.forEach((todo)=>{
+            orderTab.push(todo.order);
+        })
+        return orderTab;
+    }
+
+    const newOrder = () =>{
+        var last = todos.length
+        last = last.toString()
+        return (last)
+    }
+
+    const columnOrder = ()=>{
+        return ['column-1']
+    }
+    
 
     //Side effects
     function getInitialTodos() {
         // getting stored items
         const temp = localStorage.getItem("todos")
         const savedTodos = JSON.parse(temp)
-        
         return savedTodos || []
     }
     
@@ -88,14 +149,24 @@ const TodoContainer = () =>  {
                         <div className="inner">
                             <Header />
                             <InputTodo addTodoProps={addTodoItem} />
-                            <TodosList 
-                                todos={todos} 
-                                handleChangeProps={handleChange} 
-                                deleteTodoProps={delTodo}
-                                setUpdate={setUpdate}
-                            />
+                            <DragDropContext onDragEnd={onDragEnd}>
+                                {columnOrder().map((columnId) =>{
+                                    const column = columnOrder();
+                                    return (
+                                        <TodosList 
+                                            key={column[0]}
+                                            column={column[0]}
+                                            todos={todos} 
+                                            handleChangeProps={handleChange} 
+                                            deleteTodoProps={delTodo}
+                                            setUpdate={setUpdate}
+                                        />
+                                    )
+                                })}
+                            </DragDropContext>
+                            
                         </div>
-                    </div>
+	                </div>     
                 </Route>
                 <Route path="/about">
                     <About />

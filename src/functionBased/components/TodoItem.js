@@ -1,6 +1,7 @@
 import React, { useState , useEffect } from "react"
 import styles from "./TodoItem.module.css"
 import { FaTrash } from "react-icons/fa"
+import {Draggable} from 'react-beautiful-dnd'
 
 const TodoItem = props => {
   const [editing, setEditing] = useState(false)
@@ -41,32 +42,46 @@ const TodoItem = props => {
   }, [])
 
   return (
-    <li className={styles.item}>
-      <div onDoubleClick={handleEditing} style={viewMode}>
-        <input
-          type="checkbox"
-          className={styles.checkbox}
-          checked={completed}
-          onChange={() => props.handleChangeProps(id)}
-        />
-        <button onClick={() => props.deleteTodoProps(id)}>
-            <FaTrash 
-                style={{ color: "darkgoldenrod", fontSize: "16px" }}
+    <Draggable draggableId={props.todo.order} index={props.index}>
+      {(provided) => (
+        <div
+          ref={provided.innerRef}
+          {...provided.draggableProps}
+          {...provided.dragHandleProps}
+        >
+          <li className={styles.item}>
+            <div onDoubleClick={handleEditing} style={viewMode}>
+              <input
+                type="checkbox"
+                className={styles.checkbox}
+                checked={completed}
+                onChange={() => props.handleChangeProps(id)}
+              />
+              <button onClick={() => props.deleteTodoProps(id)}>
+                  <FaTrash 
+                      style={{ color: "darkgoldenrod", fontSize: "16px" }}
+                  />
+              </button>
+              <span style={completed ? completedStyle : null}>{title}</span>
+            </div>
+            <input
+              type="text"
+              style={editMode}
+              className={styles.textInput}
+              value={title}
+              onChange={e => {
+                props.setUpdate(e.target.value, id)
+              }}
+              onKeyDown={handleUpdatedDone}
             />
-        </button>
-        <span style={completed ? completedStyle : null}>{title}</span>
-      </div>
-      <input
-        type="text"
-        style={editMode}
-        className={styles.textInput}
-        value={title}
-        onChange={e => {
-          props.setUpdate(e.target.value, id)
-        }}
-        onKeyDown={handleUpdatedDone}
-      />
-    </li>
+          </li>
+        </div>
+      )}
+
+
+
+      
+    </Draggable>
   )
 }
 
