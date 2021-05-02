@@ -85,16 +85,12 @@ const TodoContainer = () =>  {
         newTaskIds.splice(source.index,1);
         newTaskIds.splice(destination.index, 0, draggableId)
 
-        var newTodos = []
+        
+        var newTodos = todos.map(todo => todo)
 
-        newTodos = todos.map(todo =>{
-            for(var i=0; i < newTaskIds.length;i++){
-                if (todo.order===newTaskIds[i]){
-                    todo.order= i.toString()
-                    return todo
-                }
-            }  
-        })
+        for(var i=0;i<newTaskIds.length;i++){
+            newTodos[i].order=newTaskIds[i];
+        }
 
         newTodos = newTodos.sort(function(a, b){
             return a.order - b.order;
